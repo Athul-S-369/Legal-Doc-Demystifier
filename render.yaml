@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: legal-doc-demystifier
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run.py
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHON_VERSION
+        value: 3.11.9

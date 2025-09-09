@@ -15,6 +15,11 @@ def create_app() -> Flask:
 	Path(app.config['UPLOAD_FOLDER']).mkdir(parents=True, exist_ok=True)
 	Path(app.config['PROCESSED_FOLDER']).mkdir(parents=True, exist_ok=True)
 
+	# Health check endpoint for Render
+	@app.route('/health')
+	def health():
+		return {'status': 'healthy'}, 200
+
 	return app
 
 
