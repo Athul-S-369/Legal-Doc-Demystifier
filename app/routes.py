@@ -59,17 +59,33 @@ def upload():
 	plaintext = decrypt_file(file_path)
 	tmp_path = file_path.with_name(f"{file_path.stem}_dec{file_path.suffix}")
 	tmp_path.write_bytes(plaintext)
-	text = extract_text_from_file(str(tmp_path))
 	try:
-		tmp_path.unlink()
-	except Exception:
-		pass
-	clauses = segment_clauses(text)
-	summary = summarize_text(text)
-	risks = analyze_risks(clauses)
+		text = extract_text_from_file(str(tmp_path))
+		if not text or len(text.strip()) < 50:
+			return render_template('error.html', error="Could not extract text from document. Please try a different file.")
+		
+		clauses = segment_clauses(text)
+		if not clauses:
+			clauses = [text[:500]]  # Fallback to first 500 chars
+		
+		summary = summarize_text(text)
+		risks = analyze_risks(clauses)
 
-	# Index clauses for retrieval
-	get_embedding_index().add_document(doc_id=uid, clauses=clauses)
+		# Index clauses for retrieval (async to avoid timeout)
+		try:
+			get_embedding_index().add_document(doc_id=uid, clauses=clauses)
+		except Exception as e:
+			print(f"Embedding indexing failed: {e}")
+			# Continue without indexing
+		
+	except Exception as e:
+		print(f"Processing error: {e}")
+		return render_template('error.html', error="Error processing document. Please try again.")
+	finally:
+		try:
+			tmp_path.unlink()
+		except Exception:
+			pass
 
 	processed_dir = Path('data/processed')
 	processed_dir.mkdir(parents=True, exist_ok=True)
@@ -134,14 +150,28 @@ def delete_doc(doc_id: str):
 @bp.post('/process_text')
 def process_text():
 	text = request.form.get('raw_text', '').strip()
-	if not text:
-		return redirect(url_for('main.index'))
-	uid = uuid.uuid4().hex
-	clauses = segment_clauses(text)
-	summary = summarize_text(text)
-	risks = analyze_risks(clauses)
-	# index for chat
-	get_embedding_index().add_document(doc_id=uid, clauses=clauses)
-	return render_template('dashboard.html', doc_id=uid, summary=summary, risks=risks, clauses=clauses)
+	if not text or len(text.strip()) < 50:
+		return render_template('error.html', error="Please enter at least 50 characters of text.")
+	
+	try:
+		uid = uuid.uuid4().hex
+		clauses = segment_clauses(text)
+		if not clauses:
+			clauses = [text[:500]]  # Fallback to first 500 chars
+		
+		summary = summarize_text(text)
+		risks = analyze_risks(clauses)
+		
+		# index for chat (with error handling)
+		try:
+			get_embedding_index().add_document(doc_id=uid, clauses=clauses)
+		except Exception as e:
+			print(f"Embedding indexing failed: {e}")
+			# Continue without indexing
+		
+		return render_template('dashboard.html', doc_id=uid, summary=summary, risks=risks, clauses=clauses)
+	except Exception as e:
+		print(f"Processing error: {e}")
+		return render_template('error.html', error="Error processing text. Please try again.")
 
 

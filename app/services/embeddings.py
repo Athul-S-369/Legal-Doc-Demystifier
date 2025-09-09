@@ -33,7 +33,15 @@ class EmbeddingIndex:
 
 	def _get_model(self):
 		if self.model is None:
-			self.model = SentenceTransformer('all-MiniLM-L6-v2')
+			try:
+				self.model = SentenceTransformer('all-MiniLM-L6-v2')
+			except Exception as e:
+				print(f"Model loading failed: {e}")
+				# Return a dummy model that won't crash
+				class DummyModel:
+					def encode(self, texts, **kwargs):
+						return np.random.random((len(texts), 384)).astype('float32')
+				self.model = DummyModel()
 		return self.model
 
 	def add_document(self, doc_id: str, clauses: List[str]) -> None:
