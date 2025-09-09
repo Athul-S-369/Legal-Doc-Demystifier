@@ -15,9 +15,21 @@ from .services.storage import encrypt_file_inplace, decrypt_file, delete_documen
 
 bp = Blueprint('main', __name__)
 
-# Singletons for in-process use
-embedding_index = EmbeddingIndex(index_dir=Path('models/faiss_index'))
-chatbot = RAGChatbot(embedding_index=embedding_index)
+# Singletons for in-process use - lazy initialization
+embedding_index = None
+chatbot = None
+
+def get_embedding_index():
+	global embedding_index
+	if embedding_index is None:
+		embedding_index = EmbeddingIndex(index_dir=Path('models/faiss_index'))
+	return embedding_index
+
+def get_chatbot():
+	global chatbot
+	if chatbot is None:
+		chatbot = RAGChatbot(embedding_index=get_embedding_index())
+	return chatbot
 
 
 @bp.get('/')
@@ -57,7 +69,7 @@ def upload():
 	risks = analyze_risks(clauses)
 
 	# Index clauses for retrieval
-	embedding_index.add_document(doc_id=uid, clauses=clauses)
+	get_embedding_index().add_document(doc_id=uid, clauses=clauses)
 
 	processed_dir = Path('data/processed')
 	processed_dir.mkdir(parents=True, exist_ok=True)
@@ -74,7 +86,7 @@ def chat():
 	data = request.get_json(force=True)
 	query = data.get('query', '')
 	doc_id = data.get('doc_id')
-	answer, citations = chatbot.answer(query=query, doc_id=doc_id)
+	answer, citations = get_chatbot().answer(query=query, doc_id=doc_id)
 	return jsonify({
 		'answer': answer,
 		'citations': citations,
@@ -129,7 +141,7 @@ def process_text():
 	summary = summarize_text(text)
 	risks = analyze_risks(clauses)
 	# index for chat
-	embedding_index.add_document(doc_id=uid, clauses=clauses)
+	get_embedding_index().add_document(doc_id=uid, clauses=clauses)
 	return render_template('dashboard.html', doc_id=uid, summary=summary, risks=risks, clauses=clauses)
 
 

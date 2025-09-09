@@ -28,7 +28,7 @@ class RAGChatbot:
 		return f"it {obligation} something related to your question. I can see {time_str} and {amount_str}."
 
 	def answer(self, query: str, doc_id: Optional[str]) -> Tuple[str, List[str]]:
-		results = self.embedding_index.search(query=query, k=5, doc_id=doc_id)
+		results = self.embedding_index.search(query=query, k=3, doc_id=doc_id)  # Reduced from 5 to 3
 		contexts = [r[2] for r in results]
 		answer = self._generate_answer(query, contexts)
 		return answer, contexts
