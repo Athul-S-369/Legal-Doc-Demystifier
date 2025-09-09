@@ -1,0 +1,17 @@
+body { font-family: system-ui, Arial, sans-serif; margin: 0; padding: 0; background: #0b1020; color: #e6e9ef; }
+.container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+h1 { margin-bottom: 16px; }
+.card { background: #151a2e; border: 1px solid #21284a; border-radius: 12px; padding: 16px; margin: 12px 0; }
+label { display: block; margin-bottom: 8px; }
+input[type="file"] { margin-bottom: 12px; }
+button, .btn { background: #5b8cff; border: none; color: white; padding: 10px 16px; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.preview { font-size: 12px; opacity: 0.9; margin-top: 8px; white-space: pre-wrap; }
+.chat { grid-column: span 2; }
+#chatbox { height: 280px; overflow: auto; background: #0f1430; border: 1px solid #1f2550; border-radius: 8px; padding: 8px; margin-bottom: 8px; }
+.msg { padding: 4px 0; white-space: pre-wrap; }
+.actions { margin-top: 8px; }
+
+@media (max-width: 800px) { .grid { grid-template-columns: 1fr; } .chat { grid-column: span 1; } }
+
+

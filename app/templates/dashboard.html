@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Document Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <h1>Document Dashboard</h1>
+        <div class="grid">
+            <section class="card">
+                <h2>Summary</h2>
+                <pre class="preview" style="white-space: pre-wrap; font-family: inherit;">{{ summary }}</pre>
+                <div class="actions">
+                    <a href="/export/summary/{{ doc_id }}" class="btn">Download Summary</a>
+                    <a href="/export/clauses/{{ doc_id }}" class="btn">Download Clauses</a>
+                </div>
+            </section>
+            <section class="card">
+                <h2>High-Risk Clauses</h2>
+                <ul>
+                    {% for r in risks %}
+                    <li>
+                        <strong>{{ r.risk_percent }}%:</strong> {{ ', '.join(r.labels) }}
+                        <div class="preview">{{ r.preview }}</div>
+                    </li>
+                    {% else %}
+                    <li>No specific risks detected by heuristics.</li>
+                    {% endfor %}
+                </ul>
+            </section>
+            <section class="card chat">
+                <h2>Ask about this document</h2>
+                <div id="chatbox"></div>
+                <div class="chat-input">
+                    <input type="text" id="chat-query" placeholder="Type your question" />
+                    <button id="send-btn">Send</button>
+                    <form action="/delete/{{ doc_id }}" method="post" style="margin-left:8px; display:inline;">
+                        <button class="btn" style="background:#e05b5b"
+                            onclick="return confirm('Delete this document and all data?')">Delete Document</button>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script>
+        const docId = "{{ doc_id }}";
+        const chatbox = document.getElementById('chatbox');
+        const input = document.getElementById('chat-query');
+        document.getElementById('send-btn').onclick = async () => {
+            const q = input.value.trim();
+            if (!q) return;
+            appendMsg('You', q);
+            input.value = '';
+            const res = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: q, doc_id: docId })
+            });
+            const data = await res.json();
+            appendMsg('Assistant', data.answer);
+            if (data.citations && data.citations.length) {
+                appendMsg('Citations', data.citations.map(c => '- ' + c).join('\n'));
+            }
+        };
+
+        function appendMsg(who, text) {
+            const div = document.createElement('div');
+            div.className = 'msg';
+            div.innerText = who + ': ' + text;
+            chatbox.appendChild(div);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>

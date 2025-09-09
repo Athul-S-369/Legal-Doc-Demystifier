@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Legal Document Demystifier</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <h1>Legal Document Demystifier</h1>
+        <form action="/upload" method="post" enctype="multipart/form-data" class="card">
+            <label for="document">Upload PDF/Image/Text</label>
+            <input type="file" name="document" id="document" accept=".pdf,.png,.jpg,.jpeg,.tiff,.bmp,.txt" required />
+            <button type="submit">Process</button>
+        </form>
+        <form action="/process_text" method="post" class="card">
+            <label for="raw_text">Or paste text</label>
+            <textarea id="raw_text" name="raw_text" rows="10" style="width:100%"
+                placeholder="Paste contract text here..."></textarea>
+            <button type="submit" style="margin-top:8px">Process Text</button>
+        </form>
+    </div>
+</body>
+
+</html>
