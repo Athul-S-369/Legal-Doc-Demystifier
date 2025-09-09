@@ -142,7 +142,7 @@ graph LR
 python run.py
 ```
 
-Then open your browser and navigate to: **http://127.0.0.1:5000**
+
 
 ---
 
