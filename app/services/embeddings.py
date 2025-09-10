@@ -1,9 +1,7 @@
 from pathlib import Path
 from typing import List, Tuple, Optional
-import numpy as np
 import json
 import re
-from collections import Counter
 
 
 class EmbeddingIndex:
