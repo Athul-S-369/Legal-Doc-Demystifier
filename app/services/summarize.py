@@ -87,11 +87,11 @@ def textrank_summary(text: str, max_sentences: int = 8) -> str:
 def summarize_text(text: str) -> str:
 	length = len(text.split())
 	if length < 400:
-		k = 4  # Reduced from 6
+		k = 6
 	elif length < 1500:
-		k = 6  # Reduced from 10
+		k = 10
 	else:
-		k = 8  # Reduced from 16
+		k = 16
 	return textrank_summary(text, max_sentences=k)
 
 
