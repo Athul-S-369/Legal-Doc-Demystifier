@@ -78,8 +78,10 @@ def upload():
 def chat():
 	try:
 		data = request.get_json(force=True)
-		query = data.get('query', '')
+		query = data.get('query', '').strip()
 		doc_id = data.get('doc_id')
+		if not query:
+			return jsonify({'answer': 'Please enter a question.', 'citations': []})
 		answer, citations = get_chatbot().answer(query=query, doc_id=doc_id)
 		return jsonify({
 			'answer': answer,
@@ -89,7 +91,7 @@ def chat():
 		return jsonify({
 			'answer': f"Error processing chat: {str(e)}",
 			'citations': [],
-		}), 500
+		}), 200
 
 
 @bp.get('/export/summary/<doc_id>')
