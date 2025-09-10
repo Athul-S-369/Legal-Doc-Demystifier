@@ -10,7 +10,7 @@ from .services.summarize import summarize_text
 from .services.risk import analyze_risks
 from .services.embeddings import EmbeddingIndex
 from .services.rag_chat import RAGChatbot
-from .services.storage import encrypt_file_inplace, decrypt_file, delete_document_files
+# Storage encryption disabled for lightweight deploy; use plain files
 
 
 bp = Blueprint('main', __name__)
@@ -132,7 +132,15 @@ def export_clauses(doc_id: str):
 
 @bp.post('/delete/<doc_id>')
 def delete_doc(doc_id: str):
-	delete_document_files(doc_id)
+	# Remove processed artifacts if present
+	processed_dir = Path('data/processed')
+	for suffix in ['_summary.bin', '_clauses.bin', '_summary.txt', '_clauses.txt']:
+		p = processed_dir / f'{doc_id}{suffix}'
+		try:
+			if p.exists():
+				p.unlink()
+		except Exception:
+			pass
 	return redirect(url_for('main.index'))
 
 
