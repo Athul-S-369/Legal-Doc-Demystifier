@@ -9,6 +9,10 @@
 
 *Making complex legal documents understandable, actionable, and safe for everyone* 🚀
 
+<br/>
+
+<a href="https://legal-doc-demystifier-oeul.onrender.com"><img src="https://img.shields.io/badge/Live%20Demo-legal--doc--demystifier-oeul.onrender.com-5b8cff?style=for-the-badge" alt="Live Demo"/></a>
+
 </div>
 
 ---
