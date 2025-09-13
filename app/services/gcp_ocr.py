@@ -9,7 +9,14 @@ from PIL import Image
 
 from .gcp_config import gcp_config
 from google.cloud import documentai
-from google.cloud import vision
+
+# Try to import Vision API, fallback gracefully if not available
+try:
+    from google.cloud import vision
+    VISION_API_AVAILABLE = True
+except ImportError:
+    vision = None
+    VISION_API_AVAILABLE = False
 
 
 class GCPOCRService:
@@ -18,7 +25,13 @@ class GCPOCRService:
     def __init__(self):
         self.gcp_config = gcp_config
         self.documentai_client = gcp_config.get_documentai_client()
-        self.vision_client = vision.ImageAnnotatorClient() if gcp_config.is_gcp_enabled() else None
+        self.vision_client = None
+        if gcp_config.is_gcp_enabled() and VISION_API_AVAILABLE:
+            try:
+                self.vision_client = vision.ImageAnnotatorClient()
+            except Exception as e:
+                print(f"⚠️  Vision API client initialization failed: {e}")
+                self.vision_client = None
     
     def extract_text_with_documentai(self, file_path: str, processor_id: Optional[str] = None) -> str:
         """
@@ -123,7 +136,7 @@ class GCPOCRService:
     
     def is_available(self) -> bool:
         """Check if GCP OCR services are available."""
-        return self.gcp_config.is_gcp_enabled()
+        return self.gcp_config.is_gcp_enabled() and VISION_API_AVAILABLE
 
 
 # Global OCR service instance

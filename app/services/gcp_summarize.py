@@ -4,8 +4,21 @@ Enhanced summarization service using Google Vertex AI and Gemini.
 import os
 from typing import List, Optional
 import google.generativeai as genai
-from vertexai.generative_models import GenerativeModel
-from vertexai.preview.generative_models import GenerativeModel as PreviewGenerativeModel
+
+# Try to import Vertex AI models, fallback gracefully if not available
+try:
+    from vertexai.generative_models import GenerativeModel
+    VERTEX_AI_AVAILABLE = True
+except ImportError:
+    GenerativeModel = None
+    VERTEX_AI_AVAILABLE = False
+
+try:
+    from vertexai.preview.generative_models import GenerativeModel as PreviewGenerativeModel
+    PREVIEW_VERTEX_AI_AVAILABLE = True
+except ImportError:
+    PreviewGenerativeModel = None
+    PREVIEW_VERTEX_AI_AVAILABLE = False
 
 from .gcp_config import gcp_config
 
@@ -30,12 +43,14 @@ class GCPSummarizationService:
                 print("✅ Gemini model initialized")
             
             # Initialize Vertex AI model
-            if self.gcp_config.is_gcp_enabled():
+            if self.gcp_config.is_gcp_enabled() and VERTEX_AI_AVAILABLE:
                 try:
                     self.vertex_model = GenerativeModel('gemini-1.5-flash')
                     print("✅ Vertex AI model initialized")
                 except Exception as e:
                     print(f"⚠️  Vertex AI initialization failed: {e}")
+            else:
+                print("⚠️  Vertex AI not available")
                     
         except Exception as e:
             print(f"⚠️  AI model initialization failed: {e}")
