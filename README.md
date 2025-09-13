@@ -178,10 +178,11 @@ python run.py
 | Category | Technology | Purpose |
 |----------|------------|---------|
 | 🐍 **Backend** | Flask (Python) | Web framework |
-| 🔍 **OCR** | Tesseract, PyPDF2, pdf2image | Text extraction |
-| 🤖 **AI/ML** | sentence-transformers, FAISS | Vector embeddings & retrieval |
-| 📝 **Text Processing** | Custom TextRank | Smart summarization |
-| 🔒 **Security** | Fernet encryption | Document protection |
+| 🔍 **OCR** | Tesseract, PyPDF2, pdf2image, Google Vision AI | Text extraction |
+| 🤖 **AI/ML** | Google Gemini, Vertex AI, Custom TextRank | Advanced AI processing |
+| 📝 **Text Processing** | Google Document AI, Custom algorithms | Smart summarization |
+| 🔒 **Security** | Google Cloud Storage, Encryption | Document protection |
+| ☁️ **Cloud** | Google Cloud Platform | Scalable AI services |
 | 🎨 **Frontend** | HTML, CSS, JavaScript | User interface |
 
 </div>
@@ -194,20 +195,61 @@ python run.py
 📦 Legal-Doc-Demystifier/
 ├── 🐍 app/
 │   ├── 🔧 services/
-│   │   ├── ocr.py          # 📄 Text extraction from PDFs/images
-│   │   ├── segment.py      # ✂️ Clause segmentation
-│   │   ├── summarize.py    # 📝 TextRank summarization
-│   │   ├── risk.py         # ⚠️ Risk analysis heuristics
-│   │   ├── embeddings.py   # 🧠 FAISS vector indexing
-│   │   ├── rag_chat.py     # 💬 RAG chatbot
-│   │   └── storage.py      # 🔒 Encrypted storage
-│   ├── 🎨 templates/       # HTML templates
-│   ├── 🎨 static/         # CSS/JS assets
-│   └── 🛣️ routes.py       # Flask routes
-├── 📁 data/               # Document storage (encrypted)
-├── 🤖 models/            # AI model storage
-└── 📋 requirements.txt   # Python dependencies
+│   │   ├── ocr.py              # 📄 Text extraction from PDFs/images
+│   │   ├── segment.py          # ✂️ Clause segmentation
+│   │   ├── summarize.py        # 📝 TextRank summarization
+│   │   ├── risk.py             # ⚠️ Risk analysis heuristics
+│   │   ├── embeddings.py       # 🧠 FAISS vector indexing
+│   │   ├── rag_chat.py         # 💬 RAG chatbot
+│   │   ├── storage.py          # 🔒 Encrypted storage
+│   │   ├── gcp_config.py       # ☁️ Google Cloud configuration
+│   │   ├── gcp_ocr.py          # 🔍 Enhanced OCR with Vision AI
+│   │   ├── gcp_summarize.py    # 🤖 AI summarization with Gemini
+│   │   ├── gcp_chat.py         # 💬 Enhanced chatbot with Gemini
+│   │   └── gcp_storage.py      # ☁️ Cloud Storage integration
+│   ├── 🎨 templates/           # HTML templates
+│   ├── 🎨 static/             # CSS/JS assets
+│   └── 🛣️ routes.py           # Flask routes
+├── 📁 data/                   # Document storage (local fallback)
+├── 🤖 models/                # AI model storage
+├── 📋 requirements.txt       # Python dependencies
+├── 🐳 Dockerfile             # Container configuration
+├── ☁️ app.yaml               # Google Cloud App Engine config
+└── 📖 gcp_setup.md           # Google Cloud setup guide
 ```
+
+---
+
+## ☁️ Google Cloud Integration
+
+### 🚀 Enhanced AI Features
+
+Our application now integrates with Google Cloud Platform for advanced AI capabilities:
+
+- **🤖 Gemini AI**: Enhanced chatbot with natural language understanding
+- **🔍 Vision AI**: Superior OCR for scanned documents and images
+- **📝 Document AI**: Advanced document parsing and structure analysis
+- **☁️ Cloud Storage**: Secure, scalable document storage
+- **🧠 Vertex AI**: Enterprise-grade AI processing
+
+### 🛠️ Setup Google Cloud Services
+
+1. **Follow the setup guide**: See [gcp_setup.md](gcp_setup.md) for detailed instructions
+2. **Configure environment variables**: Set up your Google Cloud credentials
+3. **Enable APIs**: Activate required Google Cloud APIs
+4. **Deploy**: Use Google Cloud Run or App Engine for production
+
+### 💡 Benefits of Google Cloud Integration
+
+- **🎯 Better Accuracy**: AI-powered text extraction and analysis
+- **⚡ Faster Processing**: Cloud-based parallel processing
+- **🔒 Enhanced Security**: Enterprise-grade data protection
+- **📈 Scalability**: Automatic scaling based on demand
+- **💰 Cost-Effective**: Pay only for what you use
+
+### 🔄 Fallback Mode
+
+The application gracefully falls back to local processing when Google Cloud services are not available, ensuring it works in any environment.
 
 ---
 

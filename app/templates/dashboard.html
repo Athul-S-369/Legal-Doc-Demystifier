@@ -35,6 +35,10 @@
             </section>
             <section class="card chat">
                 <h2>Ask about this document</h2>
+                <div class="ai-features" style="margin-bottom: 10px;">
+                    <button id="get-insights-btn" class="btn" style="background: #4CAF50; margin-right: 5px;">Get AI Insights</button>
+                    <button id="suggest-questions-btn" class="btn" style="background: #2196F3;">Suggest Questions</button>
+                </div>
                 <div id="chatbox"></div>
                 <div class="chat-input">
                     <input type="text" id="chat-query" placeholder="Type your question" />
@@ -75,6 +79,43 @@
             chatbox.appendChild(div);
             chatbox.scrollTop = chatbox.scrollHeight;
         }
+
+        // AI Insights functionality
+        document.getElementById('get-insights-btn').onclick = async () => {
+            const btn = document.getElementById('get-insights-btn');
+            btn.textContent = 'Loading...';
+            btn.disabled = true;
+            
+            try {
+                const res = await fetch(`/insights/${docId}`);
+                const data = await res.json();
+                appendMsg('AI Assistant', data.insights);
+            } catch (error) {
+                appendMsg('Error', 'Failed to get AI insights: ' + error.message);
+            } finally {
+                btn.textContent = 'Get AI Insights';
+                btn.disabled = false;
+            }
+        };
+
+        // Suggested Questions functionality
+        document.getElementById('suggest-questions-btn').onclick = async () => {
+            const btn = document.getElementById('suggest-questions-btn');
+            btn.textContent = 'Loading...';
+            btn.disabled = true;
+            
+            try {
+                const res = await fetch(`/questions/${docId}`);
+                const data = await res.json();
+                const questions = data.questions.map(q => '• ' + q).join('\n');
+                appendMsg('AI Assistant', 'Here are some questions you might want to ask:\n\n' + questions);
+            } catch (error) {
+                appendMsg('Error', 'Failed to get suggested questions: ' + error.message);
+            } finally {
+                btn.textContent = 'Suggest Questions';
+                btn.disabled = false;
+            }
+        };
     </script>
 </body>
 

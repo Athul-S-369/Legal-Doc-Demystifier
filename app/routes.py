@@ -10,7 +10,13 @@ from .services.summarize import summarize_text
 from .services.risk import analyze_risks
 from .services.embeddings import EmbeddingIndex
 from .services.rag_chat import RAGChatbot
-# Storage encryption disabled for lightweight deploy; use plain files
+
+# Google Cloud services
+from .services.gcp_config import gcp_config
+from .services.gcp_ocr import gcp_ocr_service
+from .services.gcp_summarize import gcp_summarization_service
+from .services.gcp_chat import gcp_chatbot
+from .services.gcp_storage import gcp_storage_service
 
 
 bp = Blueprint('main', __name__)
@@ -28,7 +34,12 @@ def get_embedding_index():
 def get_chatbot():
 	global chatbot
 	if chatbot is None:
-		chatbot = RAGChatbot(embedding_index=get_embedding_index())
+		# Try GCP chatbot first, fallback to basic chatbot
+		if gcp_chatbot.is_available():
+			gcp_chatbot.embedding_index = get_embedding_index()
+			chatbot = gcp_chatbot
+		else:
+			chatbot = RAGChatbot(embedding_index=get_embedding_index())
 	return chatbot
 
 
@@ -54,16 +65,43 @@ def upload():
 		file_path = upload_dir / stored_name
 		file.save(str(file_path))
 		
-		# For now, skip encryption to avoid potential issues
-		text = extract_text_from_file(str(file_path))
+		# Enhanced text extraction with GCP services
+		text = ""
+		if gcp_ocr_service.is_available():
+			# Try GCP OCR first
+			text = gcp_ocr_service.extract_text_with_vision(str(file_path))
+			if not text:
+				text = extract_text_from_file(str(file_path))  # Fallback
+		else:
+			text = extract_text_from_file(str(file_path))
+		
+		# Enhanced summarization with GCP services
+		if gcp_summarization_service.is_available():
+			summary = gcp_summarization_service.summarize_with_gemini(text)
+			if not summary:
+				summary = summarize_text(text)  # Fallback
+		else:
+			summary = summarize_text(text)
 		
 		clauses = segment_clauses(text)
-		summary = summarize_text(text)
-		risks = analyze_risks(clauses)
+		
+		# Enhanced risk analysis with GCP services
+		if gcp_summarization_service.is_available():
+			gcp_risks = gcp_summarization_service.analyze_legal_risks(text)
+			risks = gcp_risks if gcp_risks else analyze_risks(clauses)
+		else:
+			risks = analyze_risks(clauses)
 
 		# Index clauses for retrieval
 		get_embedding_index().add_document(doc_id=uid, clauses=clauses)
 
+		# Store in Cloud Storage if available
+		if gcp_storage_service.is_available():
+			gcp_storage_service.upload_document(str(file_path), uid, "original")
+			gcp_storage_service.upload_text_content(text, uid, "extracted_text")
+			gcp_storage_service.upload_text_content(summary, uid, "summary")
+
+		# Local storage (fallback)
 		processed_dir = Path('data/processed')
 		processed_dir.mkdir(parents=True, exist_ok=True)
 		(processed_dir / f'{uid}_summary.bin').write_bytes(summary.encode('utf-8'))
@@ -154,12 +192,78 @@ def process_text():
 			return redirect(url_for('main.index'))
 		uid = uuid.uuid4().hex
 		clauses = segment_clauses(text)
-		summary = summarize_text(text)
-		risks = analyze_risks(clauses)
+		
+		# Enhanced summarization with GCP services
+		if gcp_summarization_service.is_available():
+			summary = gcp_summarization_service.summarize_with_gemini(text)
+			if not summary:
+				summary = summarize_text(text)  # Fallback
+		else:
+			summary = summarize_text(text)
+		
+		# Enhanced risk analysis with GCP services
+		if gcp_summarization_service.is_available():
+			gcp_risks = gcp_summarization_service.analyze_legal_risks(text)
+			risks = gcp_risks if gcp_risks else analyze_risks(clauses)
+		else:
+			risks = analyze_risks(clauses)
+		
+		# Store in Cloud Storage if available
+		if gcp_storage_service.is_available():
+			gcp_storage_service.upload_text_content(text, uid, "raw_text")
+			gcp_storage_service.upload_text_content(summary, uid, "summary")
+		
 		# index for chat
 		get_embedding_index().add_document(doc_id=uid, clauses=clauses)
 		return render_template('dashboard.html', doc_id=uid, summary=summary, risks=risks, clauses=clauses)
 	except Exception as e:
 		return f"Error processing text: {str(e)}", 500
+
+
+@bp.get('/insights/<doc_id>')
+def get_insights(doc_id: str):
+	"""Get AI-generated document insights."""
+	try:
+		if gcp_chatbot.is_available():
+			insights = gcp_chatbot.generate_document_insights(doc_id)
+			return jsonify({'insights': insights})
+		else:
+			return jsonify({'insights': 'AI insights not available. Please configure Google Cloud services.'})
+	except Exception as e:
+		return jsonify({'insights': f'Error generating insights: {str(e)}'}), 500
+
+
+@bp.get('/questions/<doc_id>')
+def get_suggested_questions(doc_id: str):
+	"""Get AI-suggested questions about the document."""
+	try:
+		if gcp_chatbot.is_available():
+			questions = gcp_chatbot.suggest_questions(doc_id)
+			return jsonify({'questions': questions})
+		else:
+			return jsonify({'questions': [
+				'What are the main obligations in this document?',
+				'What are the termination conditions?',
+				'Are there any penalties or fees?'
+			]})
+	except Exception as e:
+		return jsonify({'questions': ['Error loading questions']}), 500
+
+
+@bp.get('/status')
+def get_status():
+	"""Get status of Google Cloud services."""
+	try:
+		status = {
+			'gcp_enabled': gcp_config.is_gcp_enabled(),
+			'project_id': gcp_config.project_id,
+			'ocr_available': gcp_ocr_service.is_available(),
+			'summarization_available': gcp_summarization_service.is_available(),
+			'chatbot_available': gcp_chatbot.is_available(),
+			'storage_available': gcp_storage_service.is_available()
+		}
+		return jsonify(status)
+	except Exception as e:
+		return jsonify({'error': str(e)}), 500
 
 

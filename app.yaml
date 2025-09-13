@@ -1,0 +1,37 @@
+# Google Cloud App Engine configuration
+runtime: python39
+
+env_variables:
+  GOOGLE_CLOUD_PROJECT: "legal-doc-demystifier"
+  GOOGLE_CLOUD_LOCATION: "us-central1"
+  GCS_BUCKET_NAME: "legal-doc-demystifier-documents"
+
+# Automatic scaling
+automatic_scaling:
+  min_instances: 1
+  max_instances: 10
+  target_cpu_utilization: 0.6
+
+# Resources
+resources:
+  cpu: 1
+  memory_gb: 2
+  disk_size_gb: 10
+
+# Health check
+health_check:
+  enable_health_check: True
+  check_interval_sec: 30
+  timeout_sec: 4
+  unhealthy_threshold: 2
+  healthy_threshold: 2
+
+# Handlers
+handlers:
+- url: /static
+  static_dir: app/static
+  secure: always
+
+- url: /.*
+  script: auto
+  secure: always
