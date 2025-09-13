@@ -380,7 +380,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ **Robust Deployment** - Works on multiple platforms
 
 ### 🏆 **Achievements**
-- 🥇 **Hackathon Winner** - Legal Document Demystifier
+- 
 - 🚀 **Production Ready** - Deployed and accessible worldwide
 - 🤖 **AI-Powered** - Advanced document analysis capabilities
 - 🔒 **Secure** - Privacy-focused design with encryption
